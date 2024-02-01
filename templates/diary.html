@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diary</title>
+    <style>
+        @import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css");
+
+        .search-bar {
+            display: flex;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- 검색창과 돋보기 아이콘 -->
+    <div class="search-bar">
+        <form action="{{url_for('search')}}">
+            <input class="form-control" type="text" placeholder="제목으로 검색" name="query">
+            <button type="submit"><i class="bi bi-search"></i></button>
+        </form>
+    </div>
+
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th scope="col">번호</th>
+                <th scope="col">제목</th>
+                <th scope="col">작성일</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for diary in all_diaries %}
+            <tr>
+                <!-- 글 제목은 클릭하면 수정/삭제 페이지로 이동 -->
+                <th scope="row">{{ diary.diary_id }}</th>
+                <td><a href="{{ url_for('diary_detail', num=diary.diary_id) }}">{{diary.title}}</a></td>
+                <td>{{ diary.edit_time }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+
+        <tbody>
+            {% for diary in data %}
+            <tr>
+                <th scope="row">{{ diary.diary_id }}</th>
+                <td><a href="{{ url_for('diary_detail', num=diary.diary_id) }}"></a>{{ diary.title }}</td>
+                <td>{{ diary.edit_time }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-geWF76RCwLtnZ8qwWowPQNguL3RmwHVBC9FhGdlKrxdiJJigb/j/68SIy3Te4Bkz"
+        crossorigin="anonymous"></script>
+</body>
+
+</html>

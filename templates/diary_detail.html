@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-9ndCyUaIbzAi2FUVXJi0CjmCapSmO7SnpJef0486qhLnuZ2cdeRhO02iuK6FUUVM" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DiaryDetail</title>
+    <style>
+        @import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css");
+    </style>
+</head>
+
+<body>
+
+    <form method="post" id="diaryForm">
+        <input type="text" class="form-control" id="formGroupExampleInput" name="title" value="{{ diary.title }}"
+            required>
+        <div class="form-floating">
+            <textarea class="form-control" placeholder="{{ diary.mainText }}" id="floatingTextarea2"
+                style="height: 100px; color: black" name="mainText">{{ diary.mainText }}</textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">수정</button>
+        <button type="button" class="btn btn-primary" onclick="alertDelete((this))"
+            data-diary-id="{{ diary.diaryId }}">삭제</button>
+    </form>
+
+    <script>
+        function alertDelete(button) {
+            var diaryId = button.getAttribute('data-diary-id');
+            if (confirm('정말 삭제하시겠습니까?')) {
+                fetch('/diary/delete/' + diaryId, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        diaryId: diaryId
+                    }),
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log('Success:', data);
+                        window.location.href = data.redirect;
+                    })
+                    .catch((error) => {
+                        console.error('Error:', error);
+                    });
+            }
+        }
+    </script>
+
+
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js"></script>
+</body>
+
+</html>

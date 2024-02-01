@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memo Cards</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+
+        .memo-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            margin-left: 500px
+        }
+
+        .memo-card {
+            padding: 10px !important;
+            margin: 10px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            width: 300px;
+            height: 300px;
+            position: relative;
+        }
+
+        .edit-time {
+            position: absolute;
+            bottom: 50px;
+            right: 20px;
+            margin: 0;
+            font-size: 12px
+                /* 옵션: 여백 제거 */
+        }
+
+        .btn-danger {
+            position: absolute;
+            right: 2px;
+            bottom: 0;
+            width: 100%;
+        }
+
+        .memo-card h2 {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            margin-bottom: 10px;
+        }
+
+        .memo-card p {
+            margin: 0;
+        }
+
+        .pagination {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        #writeButton {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+            align-self: flex-end;
+            margin-right: 180px;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>Memo</h2>
+    <!-- 글 작성 버튼 -->
+    <button id="writeButton" data-toggle="modal" data-target="#writeModal">글 작성</button>
+
+    <!-- 모달 -->
+    <div class="modal fade" id="writeModal" tabindex="-1" role="dialog" aria-labelledby="writeModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="writeModalLabel">글 작성</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form action="{{ url_for('handle_memo') }}" method="post">
+                        <label for="memoText">내용:</label>
+                        <textarea id="memoText" name="content" class="form-control" rows="5"></textarea>
+                        <!-- 현재 시간을 숨겨진 필드로 추가 -->
+                        <input type="hidden" name="_method" value="POST">
+                        <input type="hidden" id="current_time" name="current_time" value="">
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">취소</button>
+                            <button type="submit" class="btn btn-primary">저장</button>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <div class="memo-container">
+    {% for memo in data %}
+        <div class="memo-card" data-memo-text="{{ memo.main_text }}" data-memo-id="{{ memo.memo_id }}">
+            <h2>{{ memo.main_text }}</h2>
+            <p class="edit-time" data-raw-time="{{ memo.edit_time }}">마지막 수정 시간: <span class="formatted-time"></span></p>
+            <a href="#" class="btn btn-danger" onclick="confirmDelete('{{ url_for('delete_memo', id=memo.memo_id) }}'); return false;">
+                삭제
+            </a>
+        </div>
+    {% endfor %}
+</div>
+
+    <div class="modal fade" id="memoModal" tabindex="-1" role="dialog" aria-labelledby="memoModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="memoModalLabel">Memo Details</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="updateForm" action="{{ url_for('handle_memo') }}" method="post">
+                        <textarea id="memoContent" name="content" class="form-control" rows="5"></textarea>
+                        <input type="hidden" id="memoId" name="memo_id" value="">
+                        <input type="hidden" name="_method" value="PUT">
+                        <input type="hidden" id="edit_time" name="current_time" value="">
+                        <div class="modal-footer">
+                            <button type="submit" class="btn btn-primary">수정</button>
+                        </div>
+                    </form>
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <!-- Pagination -->
+    <nav aria-label="Page navigation" class="pagination"
+        style="position: fixed; bottom: 100px; width: 100%; z-index: 1000;">
+        <ul class="pagination">
+            {% for page_num in range(1, page_num + 1) %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_num }}">{{ page_num }}</a></li>
+            {% endfor %}
+        </ul>
+    </nav>
+
+
+
+
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        // 페이지 로드 시 현재 시간을 hidden input에 설정
+        document.getElementById('current_time').value = new Date().toISOString();
+        document.getElementById('edit_time').value = new Date().toISOString();
+
+    </script>
+    <script>
+        function confirmDelete(deleteUrl) {
+            // 사용자에게 정말로 삭제할 것인지 물어봅니다.
+            var result = confirm("정말로 삭제하시겠습니까?");
+
+            // 확인을 누른 경우
+            if (result) {
+                // 지정된 URL로 이동하여 메모를 삭제합니다.
+                window.location.href = deleteUrl;
+            }
+
+            // 링크의 기본 동작을 막습니다.
+            return false;
+        }
+    </script>
+
+    <script>
+        // JavaScript로 memo_id 값을 가져와서 설정하는 부분
+        $(document).ready(function () {
+            // 이 부분에서 memo_id를 가져와서 memoId input의 value에 설정
+            var memoId = card.getAttribute('data-memo-id');
+            $("#memoId").val(memoId);
+
+            // 삭제 버튼의 href 속성을 동적으로 설정
+            var deleteUrl = "{{ url_for('delete_memo', id='delete_placeholder') }}";
+            deleteUrl = deleteUrl.replace('delete_placeholder', memoId);
+            $("#deleteBtn").attr("href", deleteUrl);
+        });
+    </script>
+    <script>
+
+        document.addEventListener("DOMContentLoaded", function () {
+            // HTML에서 받은 raw 시간 데이터를 가지고 있는 요소들을 가져옴
+            var editTimeElements = document.querySelectorAll('.edit-time');
+
+            // 각각의 요소에 대해 시간 형식을 변경하고 반영
+            editTimeElements.forEach(function (element) {
+                var rawTime = element.getAttribute('data-raw-time');
+                var formattedTime = formatDatetime(rawTime);
+                element.querySelector('.formatted-time').textContent = formattedTime;
+            });
+
+            // 시간 형식을 변경하는 함수
+            function formatDatetime(rawTime) {
+                var date = new Date(rawTime);
+                // 여기에서 시간 형식을 변경하는 작업을 수행
+                var options = { year: 'numeric', month: 'long', day: 'numeric', hour: 'numeric', minute: 'numeric', second: 'numeric' };
+                var formattedTime = date.toLocaleString('en-US', options);
+
+                return formattedTime;
+            }
+        });
+    </script>
+    <script>
+        // 글 작성 모달 열기
+        $('#writeButton').click(function () {
+            $('#writeModal').modal('show');
+        });
+
+        // 카드 클릭 시 모달 열기
+        document.querySelectorAll('.memo-card').forEach(function (card, index) {
+            card.addEventListener('click', function () {
+                var memoText = card.getAttribute('data-memo-text');
+                var memoId = card.getAttribute('data-memo-id');
+                document.getElementById('memoContent').textContent = memoText;
+                document.getElementById('memoId').value = memoId;
+                $('#memoModal').modal('show');
+            });
+        });
+    </script>
+</body>
+
+</html>
